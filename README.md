@@ -118,4 +118,4 @@ Needs Python 3.9+, scikit-learn, pandas, numpy.
 - A web interface so people don't need to run Python
 - Real-time odds from sportsbook APIs
 
-Built during the 2026 World Cup as a learning project. I used Amazon Kiro to help me work through the feature engineering and model training — it was useful for understanding why certain decisions (chronological splits, Elo as a feature) actually matter. MIT License.
+Built during the 2026 World Cup as a learning project. I used Amazon Kiro to help me work through the feature engineering and model training, and it was useful for understanding why certain decisions (chronological splits, Elo as a feature) actually matter. MIT License.
