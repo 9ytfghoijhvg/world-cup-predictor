@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from penalty_feature import get_penalty_stats
-from group_stage_feature import add_group_stage_features
-from knockout_history_feature import get_knockout_history
+from features.penalty_feature import get_penalty_stats
+from features.group_stage_feature import add_group_stage_features
+from features.knockout_history_feature import get_knockout_history
 
 # Load trained model data
 df_train = pd.read_csv('data/knockout_matches_prepared.csv')
