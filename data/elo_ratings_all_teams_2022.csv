@@ -1,0 +1,334 @@
+team,rating
+Brazil,2203
+Argentina,2191
+France,2139
+Netherlands,2134
+Spain,2064
+Portugal,2062
+Italy,2041
+England,2038
+Germany,2024
+Croatia,2018
+Belgium,2017
+Colombia,1980
+Uruguay,1976
+Japan,1953
+Morocco,1951
+Switzerland,1946
+Denmark,1940
+Ecuador,1920
+Peru,1915
+United States,1912
+Mexico,1908
+Serbia,1895
+South Korea,1884
+Hungary,1884
+Yugoslavia,1882
+Australia,1872
+Iran,1871
+Ukraine,1868
+Poland,1864
+Tunisia,1863
+Senegal,1853
+Costa Rica,1848
+Czech Republic,1832
+Algeria,1830
+Canada,1822
+Sweden,1814
+Russia,1813
+Scotland,1798
+Czechoslovakia,1797
+Austria,1796
+Norway,1790
+Basque Country,1788
+Paraguay,1786
+Jersey,1785
+Cameroon,1781
+Wales,1778
+Panama,1776
+Chile,1772
+Turkey,1764
+Ivory Coast,1758
+Guernsey,1756
+Egypt,1754
+Venezuela,1751
+Saudi Arabia,1750
+Mali,1742
+Greece,1742
+German DR,1737
+Finland,1737
+Republic of Ireland,1729
+Nigeria,1727
+Occitania,1724
+Isle of Man,1721
+Ghana,1719
+Northern Cyprus,1718
+New Zealand,1717
+Slovenia,1715
+Georgia,1710
+Iraqi Kurdistan,1710
+Padania,1706
+Jordan,1706
+Burkina Faso,1705
+Haiti,1696
+Iraq,1695
+Uzbekistan,1694
+Bolivia,1688
+Oman,1684
+Qatar,1680
+Jamaica,1679
+Romania,1665
+Israel,1665
+Bosnia and Herzegovina,1661
+Catalonia,1655
+South Africa,1650
+Abkhazia,1637
+Slovakia,1631
+Bahrain,1629
+County of Nice,1628
+Isle of Wight,1622
+Kárpátalja,1618
+Réunion,1616
+United Arab Emirates,1615
+Menorca,1609
+El Salvador,1604
+Guatemala,1602
+Cape Verde,1602
+Iceland,1601
+China,1599
+Andalusia,1594
+Albania,1593
+North Macedonia,1592
+Honduras,1592
+Rhodes,1591
+Panjab,1590
+Northern Ireland,1590
+Ynys Môn,1586
+Kernow,1585
+Gabon,1582
+Montenegro,1582
+Chameria,1578
+Bulgaria,1574
+Palestine,1569
+Kosovo,1568
+Kurdistan,1566
+Artsakh,1566
+Zambia,1565
+DR Congo,1564
+French Guiana,1557
+Arameans Suryoye,1556
+Corsica,1556
+Ellan Vannin,1554
+Yorkshire,1552
+Quebec,1546
+Equatorial Guinea,1546
+Fiji,1545
+Cascadia,1544
+Papua New Guinea,1543
+Zanzibar,1540
+Vietnam,1538
+Galicia,1537
+Syria,1537
+Åland Islands,1536
+Solomon Islands,1536
+Martinique,1534
+Maule Sur,1528
+Curaçao,1526
+Western Armenia,1526
+Greenland,1523
+Thailand,1522
+Asturias,1520
+Mauritania,1517
+Canary Islands,1516
+Surrey,1516
+Guinea,1516
+Angola,1516
+Biafra,1515
+Felvidék,1514
+Parishes of Jersey,1513
+Elba Island,1513
+Uganda,1513
+Gambia,1513
+Donetsk PR,1512
+Trinidad and Tobago,1512
+Namibia,1511
+Mapuche,1508
+Silesia,1506
+North Korea,1505
+Armenia,1505
+United Koreans in Japan,1505
+Crimea,1504
+Kenya,1502
+Brittany,1502
+New Caledonia,1502
+Benin,1500
+Suriname,1498
+Délvidék,1498
+Central Spain,1495
+Guinea-Bissau,1495
+Saugeais,1493
+South Ossetia,1491
+Cilento,1491
+Luhansk PR,1490
+Madrid,1489
+Tahiti,1486
+North Vietnam,1486
+Seborga,1486
+Matabeleland,1486
+Luxembourg,1485
+Vanuatu,1485
+Yoruba Nation,1483
+Tajikistan,1483
+Sealand,1483
+Sápmi,1482
+Estonia,1480
+Republic of St. Pauli,1480
+Ethiopia,1479
+East Turkestan,1477
+Tamil Eelam,1475
+Somaliland,1474
+Ryūkyū,1474
+West Papua,1473
+Franconia,1471
+Libya,1470
+Romani people,1469
+South Yemen,1468
+Azerbaijan,1467
+Sierra Leone,1465
+Cuba,1464
+Aymara,1463
+Provence,1461
+Belarus,1458
+Shetland,1457
+Kabylia,1456
+Botswana,1452
+Mayotte,1452
+Chechnya,1451
+Zimbabwe,1450
+Saarland,1446
+Mozambique,1444
+Togo,1444
+Burundi,1444
+Gotland,1442
+Lebanon,1442
+Tanzania,1440
+Kazakhstan,1439
+Kyrgyzstan,1437
+Monaco,1436
+Nicaragua,1435
+Two Sicilies,1433
+Indonesia,1432
+Guadeloupe,1431
+Manchukuo,1430
+Găgăuzia,1429
+Niue,1426
+Saint Helena,1425
+Saint Barthélemy,1422
+Sudan,1420
+Malawi,1420
+Palau,1420
+Bermuda,1420
+Székely Land,1419
+Congo,1417
+Madagascar,1415
+Rwanda,1413
+Liberia,1411
+Vatican City,1408
+Kuwait,1406
+Cyprus,1402
+Latvia,1402
+Western Isles,1398
+India,1397
+Western Sahara,1396
+Eswatini,1394
+Western Australia,1394
+Malaysia,1391
+Turkmenistan,1386
+Central African Republic,1384
+Comoros,1381
+Gozo,1372
+Dominican Republic,1367
+Saint Kitts and Nevis,1367
+Guyana,1366
+Niger,1364
+Antigua and Barbuda,1360
+Barawa,1359
+Orkney,1359
+Chagos Islands,1358
+Lesotho,1352
+Faroe Islands,1350
+Yemen DPR,1350
+Saare County,1340
+Vietnam Republic,1332
+Sark,1327
+Micronesia,1324
+Puerto Rico,1313
+Hitra,1313
+Ambazonia,1312
+Tibet,1307
+Saint Lucia,1307
+Malta,1306
+Hong Kong,1305
+Bonaire,1304
+Chad,1303
+Grenada,1298
+Singapore,1296
+Montserrat,1296
+Wallis Islands and Futuna,1294
+Lithuania,1290
+Saint Pierre and Miquelon,1288
+Raetia,1284
+Moldova,1274
+Belize,1269
+South Sudan,1263
+Philippines,1263
+Afghanistan,1255
+Frøya,1240
+Saint Vincent and the Grenadines,1234
+Yemen,1232
+Kiribati,1229
+Falkland Islands,1222
+Cook Islands,1221
+Tuvalu,1203
+Eritrea,1201
+Darfur,1201
+Barbados,1197
+Dominica,1196
+Aruba,1190
+Samoa,1188
+São Tomé and Príncipe,1182
+Sint Maarten,1175
+Gibraltar,1166
+Andorra,1163
+Mauritius,1163
+Bahamas,1146
+Saint Martin,1134
+Nepal,1134
+Maldives,1126
+Mongolia,1102
+Taiwan,1091
+American Samoa,1087
+Tonga,1084
+Cayman Islands,1082
+Cambodia,1081
+Turks and Caicos Islands,1080
+Alderney,1075
+Myanmar,1073
+Seychelles,1072
+Pakistan,1070
+Bangladesh,1045
+Liechtenstein,1037
+Djibouti,1027
+Somalia,1025
+United States Virgin Islands,977
+Guam,967
+Macau,942
+Northern Mariana Islands,932
+Sri Lanka,924
+British Virgin Islands,923
+Anguilla,919
+Laos,909
+San Marino,855
+Brunei,851
+Timor-Leste,840
+Bhutan,831
