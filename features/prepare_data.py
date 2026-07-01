@@ -3,6 +3,7 @@ import pandas as pd
 from penalty_feature import get_penalty_stats
 from group_stage_feature import add_group_stage_features
 from knockout_history_feature import get_knockout_history
+from rolling_goals_feature import add_rolling_goals_features
 
 df = pd.read_csv("data/matches_1930_2022.csv")
 group_stage = pd.read_csv("data/group_stage_2026.csv")
@@ -136,8 +137,11 @@ ko_expanded = ko_expanded.merge(knockout_history,
 ko_expanded.rename(columns={'knockout_history_score': 'away_knockout_history'}, inplace=True)
 ko_expanded = ko_expanded.drop(columns=['team'])
 
-# Add group stage features
+# Add group stage features (2026 tournament specific)
 ko_expanded = add_group_stage_features(ko_expanded, group_stage)
+
+# Add rolling goals features (last 10 matches before each knockout game)
+ko_expanded = add_rolling_goals_features(ko_expanded, df, window=10)
 
 # Save prepared data for modeling
 ko_expanded.to_csv('data/knockout_matches_prepared.csv', index=False)
