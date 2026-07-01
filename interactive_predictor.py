@@ -4,6 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from penalty_feature import get_penalty_stats
 from group_stage_feature import add_group_stage_features
 from knockout_history_feature import get_knockout_history
+from betting_odds import get_match_betting_odds, display_betting_context
 
 # Load trained model data
 df_train = pd.read_csv('data/knockout_matches_prepared.csv')
@@ -198,6 +199,11 @@ def main():
         # Make prediction
         result = predict_match(home_team, away_team, host_team)
         display_result(result)
+        
+        # Show betting context if available
+        betting_context = display_betting_context(home_team, away_team, result['home_win_prob'])
+        if betting_context:
+            print(betting_context)
 
 if __name__ == "__main__":
     main()
