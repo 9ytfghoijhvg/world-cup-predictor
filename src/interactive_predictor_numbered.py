@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from features.penalty_feature import get_penalty_stats
 from features.group_stage_feature import add_group_stage_features
 from features.knockout_history_feature import get_knockout_history
