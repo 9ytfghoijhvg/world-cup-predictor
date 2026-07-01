@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from penalty_feature import get_penalty_stats
 from group_stage_feature import add_group_stage_features
 from knockout_history_feature import get_knockout_history
-from betting_odds import get_match_betting_odds, display_betting_context
+from betting_odds import get_match_betting_odds, remaining_r32_matches
 
 # Load trained model data
 df_train = pd.read_csv('data/knockout_matches_prepared.csv')
@@ -126,12 +126,20 @@ def predict_match(home_team, away_team, host_team=None):
         'away_elo': away_features['elo']
     }
 
-def display_result(result):
+def display_result(result, odds_data=None):
     """Display prediction result nicely"""
     print("\n" + "=" * 70)
     print(f"{result['home_team']} vs {result['away_team']}")
     print("=" * 70)
-    print(f"Elo Ratings: {result['home_team']} ({result['home_elo']:.0f}) vs {result['away_team']} ({result['away_elo']:.0f})")
+    
+    # Display betting odds instead of Elo ratings
+    if odds_data:
+        home_line = f"{odds_data['home_moneyline']:+d}" if odds_data['home_moneyline'] > 0 else f"{odds_data['home_moneyline']}"
+        away_line = f"{odds_data['away_moneyline']:+d}" if odds_data['away_moneyline'] > 0 else f"{odds_data['away_moneyline']}"
+        print(f"Betting Odds: {result['home_team']} {home_line} | Draw {odds_data['draw_moneyline']:+d} | {result['away_team']} {away_line}")
+    else:
+        print(f"Betting Odds: Not available for this matchup")
+    
     print()
     print(f"{result['home_team']} advance: {result['home_win_prob']:.1%}")
     print(f"{result['away_team']} advance: {result['away_win_prob']:.1%}")
@@ -139,71 +147,66 @@ def display_result(result):
     print(f"🏆 Prediction: {result['prediction']} advance")
     print("=" * 70 + "\n")
 
+def display_match_list():
+    """Display all remaining Round of 32 matches"""
+    print("\n" + "=" * 70)
+    print("2026 FIFA World Cup - Round of 32 (Remaining Matches)")
+    print("=" * 70)
+    print()
+    
+    for i, (home, away) in enumerate(remaining_r32_matches, 1):
+        odds_data = get_match_betting_odds(home, away)
+        if odds_data and not odds_data['is_played']:
+            # Format odds nicely
+            home_line = f"{odds_data['home_moneyline']:+d}" if odds_data['home_moneyline'] > 0 else f"{odds_data['home_moneyline']}"
+            print(f"{i:2d}. {home:<25} vs {away:<25} ({home_line})")
+        elif odds_data and odds_data['is_played']:
+            print(f"   [{home:<25} vs {away:<25} - PLAYED]")
+    
+    print()
+    print("=" * 70 + "\n")
+
 def main():
-    """Interactive prediction loop"""
+    """Interactive prediction loop with numbered match selection"""
     print("\n" + "=" * 70)
     print("2026 FIFA World Cup Knockout Stage Predictor")
     print("=" * 70)
     
-    teams = get_all_teams()
-    print(f"\nAvailable teams ({len(teams)}):")
-    for i, team in enumerate(teams, 1):
-        print(f"  {i:2d}. {team}")
-    
     while True:
-        print("\n" + "-" * 70)
-        home_input = input("Enter home team name (or 'quit' to exit): ").strip()
+        display_match_list()
         
-        if home_input.lower() == 'quit':
+        user_input = input("Enter match number (1-9) or 'quit' to exit: ").strip()
+        
+        if user_input.lower() == 'quit':
             print("\nThanks for using the World Cup Predictor!")
             break
         
-        # Find matching team (case-insensitive)
-        home_team = None
-        for team in teams:
-            if team.lower() == home_input.lower():
-                home_team = team
-                break
-        
-        if not home_team:
-            print(f"❌ Team '{home_input}' not found. Try again.")
+        # Validate input
+        try:
+            match_num = int(user_input)
+            if match_num < 1 or match_num > len(remaining_r32_matches):
+                print(f"❌ Please enter a number between 1 and {len(remaining_r32_matches)}")
+                continue
+        except ValueError:
+            print("❌ Invalid input. Please enter a number or 'quit'")
             continue
         
-        away_input = input("Enter away team name: ").strip()
+        # Get the selected match
+        home_team, away_team = remaining_r32_matches[match_num - 1]
         
-        away_team = None
-        for team in teams:
-            if team.lower() == away_input.lower():
-                away_team = team
-                break
-        
-        if not away_team:
-            print(f"❌ Team '{away_input}' not found. Try again.")
+        # Check if match was already played
+        odds_data = get_match_betting_odds(home_team, away_team)
+        if odds_data and odds_data['is_played']:
+            print(f"\n⚠️  This match has already been played!")
             continue
-        
-        if home_team == away_team:
-            print("❌ Home and away teams must be different!")
-            continue
-        
-        # Optional: specify host team
-        host_input = input("Host country (press Enter if neutral): ").strip()
-        host_team = None
-        if host_input:
-            for team in teams:
-                if team.lower() == host_input.lower():
-                    host_team = team
-                    break
-            if not host_team and host_input:
-                print(f"⚠️  Host country '{host_input}' not found, treating as neutral venue.")
         
         # Make prediction
-        result = predict_match(home_team, away_team, host_team)
-        display_result(result)
+        result = predict_match(home_team, away_team)
         
-        # Show betting context if available
-        betting_context = display_betting_context(home_team, away_team, result['home_win_prob'])
-        if betting_context:
-            print(betting_context)
+        # Get betting odds for display
+        odds_data = get_match_betting_odds(home_team, away_team)
+        
+        display_result(result, odds_data)
 
 if __name__ == "__main__":
     main()

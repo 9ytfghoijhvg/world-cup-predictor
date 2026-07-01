@@ -119,37 +119,4 @@ def predict_match(home_team, away_team, host_team=None):
         'prediction': home_team if home_win_prob > 0.5 else away_team
     }
 
-# Example predictions
-print("=" * 70)
-print("2026 World Cup Knockout Stage Predictions")
-print("=" * 70)
 
-# USA vs Bosnia (Round of 32)
-result = predict_match('United States', 'Bosnia and Herzegovina')
-print(f"\n{result['home_team']} vs {result['away_team']}")
-print(f"  {result['home_team']} advance: {result['home_win_prob']:.1%}")
-print(f"  {result['away_team']} advance: {result['away_win_prob']:.1%}")
-print(f"  Prediction: {result['prediction']} advance")
-
-# Argentina vs Cape Verde (Round of 32)
-result = predict_match('Argentina', 'Cape Verde')
-print(f"\n{result['home_team']} vs {result['away_team']}")
-print(f"  {result['home_team']} advance: {result['home_win_prob']:.1%}")
-print(f"  {result['away_team']} advance: {result['away_win_prob']:.1%}")
-print(f"  Prediction: {result['prediction']} advance")
-
-# France vs Senegal (Round of 32)
-result = predict_match('France', 'Senegal')
-print(f"\n{result['home_team']} vs {result['away_team']}")
-print(f"  {result['home_team']} advance: {result['home_win_prob']:.1%}")
-print(f"  {result['away_team']} advance: {result['away_win_prob']:.1%}")
-print(f"  Prediction: {result['prediction']} advance")
-
-# Brazil vs Ivory Coast (Round of 32)
-result = predict_match('Brazil', 'Ivory Coast')
-print(f"\n{result['home_team']} vs {result['away_team']}")
-print(f"  {result['home_team']} advance: {result['home_win_prob']:.1%}")
-print(f"  {result['away_team']} advance: {result['away_win_prob']:.1%}")
-print(f"  Prediction: {result['prediction']} advance")
-
-print("\n" + "=" * 70)
