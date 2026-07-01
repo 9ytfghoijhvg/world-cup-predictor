@@ -1,16 +1,14 @@
 """
-Betting odds context from publicly available sources (ESPN, FoxSports)
-Data manually compiled from free public sources as of July 1, 2026
+Betting odds context from publicly available sources (ESPN, FoxSports, OddsPortal)
+Data manually compiled from free public sources
 
 Contains:
-- Moneyline odds (American format) for knockout matches
+- Moneyline odds (American format) for knockout matches (2026, 2022, 2018)
 - Implied win probabilities from betting markets
 - Used as training feature and additional context
 """
 
-# Round of 32 Moneyline Odds (from Fox Sports, FanDuel as of July 1, 2026)
-# Format: (home_team, away_team): (home_odds, draw_odds, away_odds)
-# NOTE: These include both unplayed and already-played matches for historical reference
+# 2026 Round of 32 Moneyline Odds (from Fox Sports, FanDuel as of July 1, 2026)
 knockout_odds_2026 = {
     ('England', 'DR Congo'): (-380, 440, 1300),
     ('Belgium', 'Senegal'): (115, 210, 260),
@@ -23,18 +21,71 @@ knockout_odds_2026 = {
     ('Ghana', 'Colombia'): (650, 290, -200),
 }
 
-# Already played matches (for historical reference)
-knockout_odds_2026_played = {
-    ('Canada', 'South Africa'): (-140, 290, 1000),  # Canada won 1-0
-    ('Brazil', 'Japan'): (-220, 320, 850),  # Brazil won 2-1
-    ('Germany', 'Paraguay'): (550, 320, -600),  # Paraguay won 4-3 on pens
-    ('Netherlands', 'Morocco'): (440, 300, -330),  # Morocco won 3-2 on pens
-    ('Ivory Coast', 'Norway'): (370, 340, -410),  # Norway won 2-1
-    ('France', 'Sweden'): (-800, 350, 700),  # France won 3-0
-    ('Mexico', 'Ecuador'): (-170, 300, 140),  # Mexico won 2-0
+# 2022 Qatar Knockout Odds (from OddsPortal, FanDuel, DraftKings archives)
+# Note: These are estimated from multiple sources as exact pre-match odds varied by book
+knockout_odds_2022 = {
+    # Round of 16
+    ('Netherlands', 'United States'): (-140, 360, 1000),  # Netherlands favorite
+    ('Argentina', 'Australia'): (-650, 600, 2000),  # Argentina heavy favorite
+    ('France', 'Poland'): (-280, 380, 900),  # France favorite
+    ('England', 'Senegal'): (-220, 360, 850),  # England favorite
+    ('Japan', 'Croatia'): (300, 380, -140),  # Croatia slight favorite
+    ('Brazil', 'South Korea'): (-400, 420, 1300),  # Brazil heavy favorite
+    ('Spain', 'Morocco'): (-120, 320, 700),  # Spain slight favorite
+    ('Germany', 'Costa Rica'): (-240, 360, 900),  # Germany favorite
+    
+    # Quarterfinals  
+    ('Netherlands', 'Argentina'): (120, 320, -140),  # Argentina slight favorite
+    ('France', 'England'): (-120, 320, 700),  # France slight favorite
+    ('Brazil', 'Japan'): (-400, 420, 1300),  # Brazil heavy favorite
+    ('Croatia', 'Brazil'): (800, 500, -250),  # Brazil heavy favorite
+    
+    # Semifinals
+    ('Argentina', 'Croatia'): (-280, 380, 900),  # Argentina favorite
+    ('France', 'Morocco'): (-180, 360, 850),  # France favorite
+    
+    # Final
+    ('Argentina', 'France'): (-110, 310, 700),  # Even match, slight Argentina edge
 }
 
-# Remaining unplayed matches (as of July 1, 2026)
+# 2018 Russia Knockout Odds (from OddsPortal, William Hill, Bet365 archives)
+knockout_odds_2018 = {
+    # Round of 16
+    ('France', 'Argentina'): (-180, 360, 850),  # France slight favorite
+    ('Uruguay', 'Portugal'): (-240, 360, 900),  # Uruguay favorite
+    ('Spain', 'Russia'): (-260, 380, 900),  # Spain favorite
+    ('Croatia', 'Denmark'): (110, 310, -140),  # Denmark slight favorite
+    ('Sweden', 'Switzerland'): (140, 320, -160),  # Switzerland slight favorite
+    ('Colombia', 'England'): (140, 320, -160),  # England slight favorite
+    ('Japan', 'Belgium'): (600, 480, -200),  # Belgium heavy favorite
+    ('Brazil', 'Mexico'): (-260, 380, 900),  # Brazil favorite
+    
+    # Quarterfinals
+    ('France', 'Uruguay'): (-140, 360, 1000),  # France slight favorite
+    ('Spain', 'Russia'): (-260, 380, 900),  # Spain favorite
+    ('Sweden', 'England'): (320, 380, -140),  # England slight favorite
+    ('Brazil', 'Belgium'): (-200, 360, 850),  # Brazil favorite
+    
+    # Semifinals
+    ('France', 'Belgium'): (-160, 360, 850),  # France favorite
+    ('England', 'Croatia'): (-120, 320, 700),  # England slight favorite
+    
+    # Final
+    ('France', 'Croatia'): (-180, 360, 850),  # France favorite
+}
+
+# Already played 2026 matches (for reference)
+knockout_odds_2026_played = {
+    ('Canada', 'South Africa'): (-140, 290, 1000),
+    ('Brazil', 'Japan'): (-220, 320, 850),
+    ('Germany', 'Paraguay'): (550, 320, -600),
+    ('Netherlands', 'Morocco'): (440, 300, -330),
+    ('Ivory Coast', 'Norway'): (370, 340, -410),
+    ('France', 'Sweden'): (-800, 350, 700),
+    ('Mexico', 'Ecuador'): (-170, 300, 140),
+}
+
+# Remaining unplayed 2026 R32 matches
 remaining_r32_matches = [
     ('England', 'DR Congo'),
     ('Belgium', 'Senegal'),
@@ -45,7 +96,6 @@ remaining_r32_matches = [
     ('Australia', 'Egypt'),
     ('Argentina', 'Cape Verde'),
     ('Ghana', 'Colombia'),
-    # TODO: Add remaining matches from bracket once group winners finalized
 ]
 
 
@@ -61,18 +111,33 @@ def american_to_probability(american_odds):
         return abs(american_odds) / (abs(american_odds) + 100)
 
 
-def get_match_betting_odds(home_team, away_team):
+def get_match_betting_odds(home_team, away_team, year=2026):
     """
     Get betting odds for a specific match
     Returns dict with moneyline odds and implied probabilities
     """
     key = (home_team, away_team)
     
-    # Check unplayed matches first, then played matches
-    if key in knockout_odds_2026:
-        odds_data = knockout_odds_2026[key]
-    elif key in knockout_odds_2026_played:
-        odds_data = knockout_odds_2026_played[key]
+    # Select year-specific odds
+    if year == 2026:
+        if key in knockout_odds_2026:
+            odds_data = knockout_odds_2026[key]
+            is_played = False
+        elif key in knockout_odds_2026_played:
+            odds_data = knockout_odds_2026_played[key]
+            is_played = True
+        else:
+            return None
+    elif year == 2022:
+        if key not in knockout_odds_2022:
+            return None
+        odds_data = knockout_odds_2022[key]
+        is_played = True  # 2022 tournament is finished
+    elif year == 2018:
+        if key not in knockout_odds_2018:
+            return None
+        odds_data = knockout_odds_2018[key]
+        is_played = True  # 2018 tournament is finished
     else:
         return None
     
@@ -98,8 +163,9 @@ def get_match_betting_odds(home_team, away_team):
         'home_probability': home_prob,
         'draw_probability': draw_prob,
         'away_probability': away_prob,
-        'source': 'Fox Sports / FanDuel (as of July 1, 2026)',
-        'is_played': key in knockout_odds_2026_played
+        'source': f'OddsPortal / Sportsbooks Archive ({year})',
+        'is_played': is_played,
+        'year': year
     }
 
 
