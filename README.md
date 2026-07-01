@@ -1,6 +1,6 @@
 # World Cup 2026 Knockout Predictor
 
-I built a Random Forest model to predict FIFA World Cup 2026 knockout stage matches. It uses historical match data from 1930–2022, some feature engineering, and betting odds from major sportsbooks. On the test set it hits 95.5% accuracy, which honestly surprised me.
+I built a Random Forest model to predict FIFA World Cup 2026 knockout stage matches. It uses historical match data from 1930–2022, some feature engineering, and betting odds from major sportsbooks. 95.5% accuracy on test set.
 
 ## How to run it
 
