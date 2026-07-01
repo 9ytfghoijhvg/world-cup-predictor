@@ -3,9 +3,7 @@ import numpy as np
 
 
 def get_knockout_history(df):
-    """
-    Calculate average knockout tournament performance for each team.
-    
+    """    
     Scoring:
     - Round of 16 exit: 1 point
     - Quarterfinal exit: 2 points
