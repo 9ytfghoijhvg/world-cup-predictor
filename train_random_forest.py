@@ -29,7 +29,7 @@ y_train = train['home_advanced']
 X_test = test[feature_cols]
 y_test = test['home_advanced']
 
-model = RandomForestClassifier(n_estimators=10000, random_state=50 ,max_depth=20 )
+model = RandomForestClassifier(n_estimators=10000, random_state=50 )
 model.fit(X_train, y_train)
 
 y_pred = model.predict(X_test)

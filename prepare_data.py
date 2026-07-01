@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd 
 from penalty_feature import get_penalty_stats
 from group_stage_feature import add_group_stage_features
+from knockout_history_feature import get_knockout_history
 
 df = pd.read_csv("data/matches_1930_2022.csv")
 group_stage = pd.read_csv("data/group_stage_2026.csv")
@@ -117,6 +118,22 @@ ko_expanded = ko_expanded.merge(penalty_stats[['team', 'win_rate']],
                                  right_on=['team'], 
                                  how='left')
 ko_expanded.rename(columns={'win_rate': 'away_penalty_win_rate'}, inplace=True)
+ko_expanded = ko_expanded.drop(columns=['team'])
+
+# Add knockout history features
+knockout_history = get_knockout_history(ko)
+ko_expanded = ko_expanded.merge(knockout_history, 
+                                 left_on=['home_team'], 
+                                 right_on=['team'], 
+                                 how='left')
+ko_expanded.rename(columns={'knockout_history_score': 'home_knockout_history'}, inplace=True)
+ko_expanded = ko_expanded.drop(columns=['team'])
+
+ko_expanded = ko_expanded.merge(knockout_history, 
+                                 left_on=['away_team'], 
+                                 right_on=['team'], 
+                                 how='left')
+ko_expanded.rename(columns={'knockout_history_score': 'away_knockout_history'}, inplace=True)
 ko_expanded = ko_expanded.drop(columns=['team'])
 
 # Add group stage features
