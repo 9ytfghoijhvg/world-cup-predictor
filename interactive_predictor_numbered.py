@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from penalty_feature import get_penalty_stats
 from group_stage_feature import add_group_stage_features
 from knockout_history_feature import get_knockout_history
-from betting_odds import get_match_betting_odds, display_betting_context, remaining_r32_matches
+from betting_odds import get_match_betting_odds, remaining_r32_matches
 
 # Load trained model data
 df_train = pd.read_csv('data/knockout_matches_prepared.csv')
@@ -126,12 +126,20 @@ def predict_match(home_team, away_team, host_team=None):
         'away_elo': away_features['elo']
     }
 
-def display_result(result):
+def display_result(result, odds_data=None):
     """Display prediction result nicely"""
     print("\n" + "=" * 70)
     print(f"{result['home_team']} vs {result['away_team']}")
     print("=" * 70)
-    print(f"Elo Ratings: {result['home_team']} ({result['home_elo']:.0f}) vs {result['away_team']} ({result['away_elo']:.0f})")
+    
+    # Display betting odds instead of Elo ratings
+    if odds_data:
+        home_line = f"{odds_data['home_moneyline']:+d}" if odds_data['home_moneyline'] > 0 else f"{odds_data['home_moneyline']}"
+        away_line = f"{odds_data['away_moneyline']:+d}" if odds_data['away_moneyline'] > 0 else f"{odds_data['away_moneyline']}"
+        print(f"Betting Odds: {result['home_team']} {home_line} | Draw {odds_data['draw_moneyline']:+d} | {result['away_team']} {away_line}")
+    else:
+        print(f"Betting Odds: Not available for this matchup")
+    
     print()
     print(f"{result['home_team']} advance: {result['home_win_prob']:.1%}")
     print(f"{result['away_team']} advance: {result['away_win_prob']:.1%}")
@@ -194,12 +202,11 @@ def main():
         
         # Make prediction
         result = predict_match(home_team, away_team)
-        display_result(result)
         
-        # Show betting context
-        betting_context = display_betting_context(home_team, away_team, result['home_win_prob'])
-        if betting_context:
-            print(betting_context)
+        # Get betting odds for display
+        odds_data = get_match_betting_odds(home_team, away_team)
+        
+        display_result(result, odds_data)
 
 if __name__ == "__main__":
     main()
