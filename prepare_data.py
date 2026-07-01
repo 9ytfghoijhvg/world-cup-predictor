@@ -1,10 +1,10 @@
 import numpy as np 
 import pandas as pd 
+from penalty_feature import get_penalty_stats
+from group_stage_feature import add_group_stage_features
 
 df = pd.read_csv("data/matches_1930_2022.csv")
-df.head()
-df.columns.tolist()
-df['Round'].unique()
+group_stage = pd.read_csv("data/group_stage_2026.csv")
 
 knockout_rounds = ['Final', 'Third-place match', 'Semi-finals', 
                    'Quarter-finals', 'Round of 16', 'Second round',
@@ -44,8 +44,6 @@ ko_flipped['home_advanced'] = 1 - ko_flipped['home_advanced']
 # Combine
 ko_expanded = pd.concat([ko, ko_flipped], ignore_index=True)
 
-# Check team name format
-print(ko_expanded['home_team'].unique()[:10])
 
 # Load Elo ratings
 elo = pd.read_csv("data/elo_ratings_wc2026.csv")
@@ -83,11 +81,7 @@ team_matches = team_matches.sort_values(['team', 'Date']).reset_index(drop=True)
 team_matches['rolling_xg_10'] = team_matches.groupby('team')['xg'].transform(
     lambda x: x.rolling(window=10, min_periods=1).mean()
 )
-
 rolling_averages = team_matches[['Date', 'team', 'rolling_xg_10']].copy()
-
-print("Rolling averages columns:", rolling_averages.columns.tolist())
-print(rolling_averages.head())
 
 # Merge average for home
 ko_expanded = ko_expanded.merge(rolling_averages[['Date', 'team', 'rolling_xg_10']], 
@@ -103,20 +97,32 @@ ko_expanded = ko_expanded.merge(rolling_averages[['Date', 'team', 'rolling_xg_10
                                  how='left')
 ko_expanded.rename(columns={'rolling_xg_10': 'away_rolling_xg_10'}, inplace=True)
 
-print(ko_expanded[['home_team', 'away_team', 'home_rolling_xg_10', 'away_rolling_xg_10']].head())
-
 # Host advantage feature
 ko_expanded['host_advantage'] = np.where(
     ko_expanded['home_team'] == ko_expanded['Host'], 2,
     np.where(ko_expanded['away_team'] == ko_expanded['Host'], -2, 0)
 )
 
-print("\nWith host advantage:")
-print(ko_expanded[['home_team', 'away_team', 'Host', 'host_advantage']].head(10))
+# Add and merge penalty stats
+penalty_stats = get_penalty_stats(ko_expanded)
+ko_expanded = ko_expanded.merge(penalty_stats[['team', 'win_rate']], 
+                                 left_on=['home_team'], 
+                                 right_on=['team'], 
+                                 how='left')
+ko_expanded.rename(columns={'win_rate': 'home_penalty_win_rate'}, inplace=True)
+ko_expanded = ko_expanded.drop(columns=['team'])
+
+ko_expanded = ko_expanded.merge(penalty_stats[['team', 'win_rate']], 
+                                 left_on=['away_team'], 
+                                 right_on=['team'], 
+                                 how='left')
+ko_expanded.rename(columns={'win_rate': 'away_penalty_win_rate'}, inplace=True)
+ko_expanded = ko_expanded.drop(columns=['team'])
+
+# Add group stage features
+ko_expanded = add_group_stage_features(ko_expanded, group_stage)
 
 # Save prepared data for modeling
 ko_expanded.to_csv('data/knockout_matches_prepared.csv', index=False)
 print(f"\nSaved prepared data: {len(ko_expanded)} rows with features ready for modeling")
-
-
 
