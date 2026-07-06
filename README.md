@@ -61,14 +61,15 @@ DR Congo advance: 6.4%
 
 **Overall tournament: 77% accuracy (10/13)**
 
-## Sample predictions (big matchups)
+## Actual R16 predictions (as they come in)
 
 ```
-Brazil vs Argentina: Argentina 58% (1-2)
-England vs Germany: Germany 52% (1-2)
-Spain vs France: Spain 54% (1-1)
-Argentina vs France (2022 rematch): Argentina 54% (1-1)
+Paraguay vs France: France 95.8% (0-3) ✅ Correct
+Canada vs Morocco: Morocco 65.0% (1-1) ✅ Correct
+Brazil vs Norway: Brazil 77.6% (3-1) ❌ Wrong (Norway won 1-2)
 ```
+
+Run `python src/log_r16_predictions.py` to see live predictions as R16 matches complete.
 
 ## Project structure
 
