@@ -26,6 +26,16 @@ new_features = old_features + [
 'away_rolling_gf_10',
 'away_rolling_ga_10']
 
+# NEWEST FEATURES (21 features - adds h2h and betting odds)
+newest_features = new_features + [
+'home_h2h_win_rate',
+'away_h2h_win_rate',
+'home_h2h_goal_diff',
+'away_h2h_goal_diff',
+'h2h_meeting_count',
+'home_odds_prob',
+'away_odds_prob']
+
 target_col = 'home_advanced'
 
 print("="*70)
@@ -58,37 +68,51 @@ print(f"  Samples: {len(df_clean_new)}")
 print(f"  Cross-validation scores: {[f'{s:.3f}' for s in scores_new]}")
 print(f"  Mean accuracy: {scores_new.mean():.3f} (+/- {scores_new.std() * 2:.3f})")
 
+# NEWEST MODEL
+df_clean_newest = df[newest_features + [target_col]].dropna()
+X_newest = df_clean_newest[newest_features]
+y_newest = df_clean_newest[target_col]
+
+model_newest = RandomForestClassifier(n_estimators=1000, random_state=50)
+scores_newest = cross_val_score(model_newest, X_newest, y_newest, cv=5, scoring='accuracy')
+
+print(f"\nNEWEST MODEL (21 features, adds h2h + betting odds):")
+print(f"  Samples: {len(df_clean_newest)}")
+print(f"  Cross-validation scores: {[f'{s:.3f}' for s in scores_newest]}")
+print(f"  Mean accuracy: {scores_newest.mean():.3f} (+/- {scores_newest.std() * 2:.3f})")
+
 # Comparison
 print("\n" + "="*70)
 print("RESULTS")
 print("="*70)
-improvement = (scores_new.mean() - scores_old.mean()) * 100
-print(f"Old model: {scores_old.mean():.3f}")
-print(f"New model: {scores_new.mean():.3f}")
-print(f"Improvement: {improvement:+.1f} percentage points")
+improvement_v2 = (scores_new.mean() - scores_old.mean()) * 100
+improvement_v3 = (scores_newest.mean() - scores_new.mean()) * 100
+print(f"Old model (10 features): {scores_old.mean():.3f}")
+print(f"New model (14 features): {scores_new.mean():.3f} ({improvement_v2:+.1f} pp)")
+print(f"Newest model (21 features): {scores_newest.mean():.3f} ({improvement_v3:+.1f} pp)")
 
-if improvement > 0:
-    print(f"\n✅ New model is better!")
-elif improvement < 0:
-    print(f"\n⚠️  Old model performed better")
+if scores_newest.mean() > scores_new.mean():
+    print(f"\n✅ Newest model with h2h and odds is best!")
+elif scores_new.mean() > scores_old.mean():
+    print(f"\n✅ Model with rolling goals is best!")
 else:
-    print(f"\n➡️  Models perform equally")
+    print(f"\n⚠️  Original model still best")
 
-# Train final model on all data
+# Train final model on all data (use best features)
 print("\n" + "="*70)
 print("TRAINING FINAL MODEL ON ALL DATA")
 print("="*70)
 model_final = RandomForestClassifier(n_estimators=1000, random_state=50)
-model_final.fit(X_new, y_new)
+model_final.fit(X_newest, y_newest)
 
 # Feature importance
 feature_importance = pd.DataFrame({
-    'feature': new_features,
+    'feature': newest_features,
     'importance': model_final.feature_importances_
 }).sort_values('importance', ascending=False)
 
-print("\nTop 10 Features by Importance:")
-print(feature_importance.head(10).to_string(index=False))
+print("\nTop 15 Features by Importance:")
+print(feature_importance.head(15).to_string(index=False))
 
 # Highlight rolling goals features
 print("\nRolling Goals Features Ranking:")

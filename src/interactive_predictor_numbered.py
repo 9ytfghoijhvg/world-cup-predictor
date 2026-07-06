@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from features.penalty_feature import get_penalty_stats
 from features.group_stage_feature import add_group_stage_features
 from features.knockout_history_feature import get_knockout_history
-from features.betting_odds import get_match_betting_odds, remaining_r32_matches
+from features.betting_odds import get_match_betting_odds, remaining_r32_matches, knockout_odds_2026, knockout_odds_2026_played
 
 # Load trained model from disk
 MODEL_PATH = 'models/random_forest_model.pkl'
@@ -44,7 +44,14 @@ except FileNotFoundError as e:
     'home_rolling_gf_10',
     'home_rolling_ga_10',
     'away_rolling_gf_10',
-    'away_rolling_ga_10']
+    'away_rolling_ga_10',
+    'home_h2h_win_rate',
+    'away_h2h_win_rate',
+    'home_h2h_goal_diff',
+    'away_h2h_goal_diff',
+    'h2h_meeting_count',
+    'home_odds_prob',
+    'away_odds_prob']
     
     target_col = 'home_advanced'
     df_clean = df_train[feature_cols + [target_col]].dropna()
@@ -111,6 +118,84 @@ def get_rolling_goals_for_team(team_name, window=10):
     rolling_ga = recent_matches['goals_against'].mean()
     
     return rolling_gf, rolling_ga
+
+def get_head_to_head_2026(home_team, away_team):
+    """Calculate head-to-head stats for 2026 predictions (1-2 year lookback from July 2026)"""
+    from datetime import datetime, timedelta
+    
+    # Lookback window: 1-2 years before July 2, 2026
+    match_date = datetime(2026, 7, 2)
+    lookback_start = match_date - timedelta(days=730)  # 2 years
+    lookback_end = match_date - timedelta(days=1)
+    
+    # Filter matches between these two teams in the window
+    h2h_matches = df_all_international[
+        (df_all_international['date'] >= lookback_start) &
+        (df_all_international['date'] <= lookback_end) &
+        (
+            ((df_all_international['home_team'] == home_team) & (df_all_international['away_team'] == away_team)) |
+            ((df_all_international['home_team'] == away_team) & (df_all_international['away_team'] == home_team))
+        )
+    ]
+    
+    if len(h2h_matches) == 0:
+        return {
+            'home_h2h_win_rate': 0.5,
+            'away_h2h_win_rate': 0.5,
+            'home_h2h_goal_diff': 0.0,
+            'away_h2h_goal_diff': 0.0,
+            'h2h_meeting_count': 0
+        }
+    
+    home_wins = 0
+    home_goal_diff_sum = 0
+    
+    for _, match in h2h_matches.iterrows():
+        if match['home_team'] == home_team:
+            goal_diff = match['home_score'] - match['away_score']
+            if goal_diff > 0:
+                home_wins += 1
+        else:
+            goal_diff = match['away_score'] - match['home_score']
+            if goal_diff > 0:
+                home_wins += 1
+        
+        home_goal_diff_sum += goal_diff
+    
+    return {
+        'home_h2h_win_rate': home_wins / len(h2h_matches),
+        'away_h2h_win_rate': (len(h2h_matches) - home_wins) / len(h2h_matches),
+        'home_h2h_goal_diff': home_goal_diff_sum / len(h2h_matches),
+        'away_h2h_goal_diff': -home_goal_diff_sum / len(h2h_matches),
+        'h2h_meeting_count': len(h2h_matches)
+    }
+
+def moneyline_to_probability(moneyline):
+    """Convert American moneyline odds to implied probability"""
+    if moneyline < 0:
+        return abs(moneyline) / (abs(moneyline) + 100)
+    else:
+        return 100 / (moneyline + 100)
+
+def get_betting_odds_probs(home_team, away_team):
+    """Get betting odds probabilities for a match"""
+    # Combine all odds
+    all_odds = {**knockout_odds_2026, **knockout_odds_2026_played}
+    
+    match_key = (home_team, away_team)
+    
+    if match_key in all_odds:
+        odds_tuple = all_odds[match_key]
+        home_moneyline, draw_moneyline, away_moneyline = odds_tuple
+        return {
+            'home_odds_prob': moneyline_to_probability(home_moneyline),
+            'away_odds_prob': moneyline_to_probability(away_moneyline)
+        }
+    
+    return {
+        'home_odds_prob': 0.5,
+        'away_odds_prob': 0.5
+    }
 
 def get_2026_team_features(team_name):
     """Get all features for a 2026 team for prediction"""
@@ -180,7 +265,13 @@ def predict_match(home_team, away_team, host_team=None):
     elif host_team and host_team == away_team:
         host_advantage = -2
     
-    # Build feature vector for prediction
+    # Get head-to-head features
+    h2h_features = get_head_to_head_2026(home_team, away_team)
+    
+    # Get betting odds features
+    odds_features = get_betting_odds_probs(home_team, away_team)
+    
+    # Build feature vector for prediction (21 features)
     X_pred = pd.DataFrame([{
         'elo_diff': home_features['elo'] - away_features['elo'],
         'home_rolling_xg_10': home_features['rolling_xg'],
@@ -195,7 +286,14 @@ def predict_match(home_team, away_team, host_team=None):
         'home_rolling_gf_10': home_features['rolling_gf'],
         'home_rolling_ga_10': home_features['rolling_ga'],
         'away_rolling_gf_10': away_features['rolling_gf'],
-        'away_rolling_ga_10': away_features['rolling_ga']
+        'away_rolling_ga_10': away_features['rolling_ga'],
+        'home_h2h_win_rate': h2h_features['home_h2h_win_rate'],
+        'away_h2h_win_rate': h2h_features['away_h2h_win_rate'],
+        'home_h2h_goal_diff': h2h_features['home_h2h_goal_diff'],
+        'away_h2h_goal_diff': h2h_features['away_h2h_goal_diff'],
+        'h2h_meeting_count': h2h_features['h2h_meeting_count'],
+        'home_odds_prob': odds_features['home_odds_prob'],
+        'away_odds_prob': odds_features['away_odds_prob']
     }])
     
     # Predict probability
@@ -214,11 +312,29 @@ def predict_match(home_team, away_team, host_team=None):
         pred_home_goals = score_model_home.predict(X_score)[0]
         pred_away_goals = score_model_away.predict(X_score)[0]
         
+        # Adjust scores based on win probability to add variance
+        # Strong favorites should score more, underdogs less
+        prob_diff = home_win_prob - 0.5  # -0.5 to +0.5
+        
+        # Scale goals by strength advantage
+        # If home is 80% favorite (prob_diff = 0.3), boost home by ~30%, reduce away by ~30%
+        adjustment_factor = prob_diff * 1.0  # Can tune this
+        
+        home_boost = 1 + adjustment_factor
+        away_boost = 1 - adjustment_factor
+        
+        pred_home_goals_adj = pred_home_goals * home_boost
+        pred_away_goals_adj = pred_away_goals * away_boost
+        
+        # Ensure minimum of 0 goals
+        pred_home_goals_adj = max(0, pred_home_goals_adj)
+        pred_away_goals_adj = max(0, pred_away_goals_adj)
+        
         predicted_score = {
-            'home_goals': round(pred_home_goals, 1),
-            'away_goals': round(pred_away_goals, 1),
-            'home_goals_rounded': round(pred_home_goals),
-            'away_goals_rounded': round(pred_away_goals)
+            'home_goals': round(pred_home_goals_adj, 1),
+            'away_goals': round(pred_away_goals_adj, 1),
+            'home_goals_rounded': round(pred_home_goals_adj),
+            'away_goals_rounded': round(pred_away_goals_adj)
         }
     
     return {
@@ -262,9 +378,9 @@ def display_result(result, odds_data=None):
     print("=" * 70 + "\n")
 
 def display_match_list():
-    """Display all remaining Round of 32 matches"""
+    """Display all Round of 16 matches"""
     print("\n" + "=" * 70)
-    print("2026 FIFA World Cup - Round of 32 (Remaining Matches)")
+    print("2026 FIFA World Cup - Round of 16 (All Matches)")
     print("=" * 70)
     print()
     
@@ -283,13 +399,13 @@ def display_match_list():
 def main():
     """Interactive prediction loop with numbered match selection"""
     print("\n" + "=" * 70)
-    print("2026 FIFA World Cup Knockout Stage Predictor")
+    print("2026 FIFA World Cup Round of 16 Predictor")
     print("=" * 70)
     
     while True:
         display_match_list()
         
-        user_input = input("Enter match number (1-9) or 'quit' to exit: ").strip()
+        user_input = input("Enter match number (1-8) or 'quit' to exit: ").strip()
         
         if user_input.lower() == 'quit':
             print("\nThanks for using the World Cup Predictor!")
