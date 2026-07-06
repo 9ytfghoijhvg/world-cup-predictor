@@ -31,7 +31,7 @@ DR Congo advance: 6.4%
 
 ## What the model actually does
 
-**Data pipeline** (`features/prepare_data_with_international.py`) — Loads every World Cup knockout match since 1930 and 49,484 international matches for rolling form features. Builds 14 features total. The new rolling goals against features (how many goals teams concede in their last 10 internationals) are the most important at 12-13% each. Elo difference is still critical at 12%. Then rolling xG, goals for, penalty win rates, group stats, and host advantage.
+**Data pipeline** (`features/prepare_data_with_international.py`) — Loads every World Cup knockout match since 1930 and 49,484 international matches for rolling form features. Builds 21 features total (was 14 in v1). The rolling goals against features are the most important at 12.6% each. Elo difference is critical at 12.1%. Added head-to-head records (1-2 year lookback before each match) and betting odds as features. Rolling xG, goals for, penalty rates, group stats, and host advantage round out the rest.
 
 **Elo calculation** (`features/elo_calculator.py`) — I built a proper Elo calculator using official K-factors (World Cup = 60, continental tournaments = 50, qualifiers = 40, friendlies = 20) because the pre-made Elo dataset only had 2026 qualifiers. Now we have ratings for 333 teams across history.
 
@@ -41,21 +41,25 @@ DR Congo advance: 6.4%
 
 **Betting odds** (`features/betting_odds.py`) — Compiled odds from Fox Sports, FanDuel, OddsPortal, and Betfair for 2018, 2022, and 2026 knockout matches.
 
-**Interactive CLI** (`src/interactive_predictor_numbered.py`) — Lists the 9 remaining R32 matches with betting odds, lets you pick which matchup to analyze.
+**Interactive CLI** (`src/interactive_predictor_numbered.py`) — Lists the remaining Round of 16 matches with betting odds, lets you pick which matchup to analyze.
 
-## Current predictions (Round of 32)
+**Prediction tracking** (`src/log_r32_predictions.py`, `src/log_r16_predictions.py`) — Logs all model predictions vs actual results. Tracks winner accuracy and score prediction error (MAE). Data stored in `data/prediction_log.csv` for ongoing tournament analysis.
 
-| Match | Model | Predicted Score | Betting favorite |
-|-------|-------|-----------------|------------------|
-| England vs DR Congo | England 94% | 2-1 | England (-380) |
-| Belgium vs Senegal | Belgium 65% | 2-1 | Belgium slight |
-| USA vs Bosnia-Herzegovina | USA 76% | 2-1 | USA (-280) |
-| Spain vs Austria | Spain 78% | 2-1 | Spain (-340) |
-| Croatia vs Portugal | Portugal 58% | 1-2 | Portugal slight |
-| Switzerland vs Algeria | Switzerland 72% | 2-1 | Switzerland |
-| Australia vs Egypt | Australia 56% | 2-1 | Australia |
-| Argentina vs Cape Verde | Argentina 98% | 3-0 | Argentina (-700) |
-| Ghana vs Colombia | Colombia 73% | 1-2 | Colombia |
+## Tournament performance (live tracking)
+
+**Round of 32 (10 matches completed):**
+- Winner accuracy: **80%** (8/10 correct)
+- Score MAE: 0.55 goals
+- ✅ Correct: Canada, Brazil, France, Norway, Mexico, England, USA, Belgium
+- ❌ Incorrect: Germany (lost to Paraguay), Netherlands (lost to Morocco)
+
+**Round of 16 (3 matches completed so far):**
+- Winner accuracy: **66.7%** (2/3 correct)
+- Score MAE: 0.73 goals
+- ✅ Correct: France, Morocco
+- ❌ Incorrect: Brazil (lost to Norway)
+
+**Overall tournament: 77% accuracy (10/13)**
 
 ## Sample predictions (big matchups)
 
@@ -72,20 +76,28 @@ Argentina vs France (2022 rematch): Argentina 54% (1-1)
 world-cup-predictor/
 ├── src/
 │   ├── interactive_predictor_numbered.py   # run this
+│   ├── log_r32_predictions.py              # new: tracks R32 predictions
+│   ├── log_r16_predictions.py              # new: tracks R16 predictions
+│   ├── prediction_tracker.py               # new: logs predictions to CSV
 │   └── predict_2026.py
 ├── features/
 │   ├── elo_calculator.py                   # new: calculate Elo for all teams
 │   ├── rolling_goals_feature.py            # new: form from 49k matches
+│   ├── rolling_xg_feature.py               # new: xG from all international matches
+│   ├── head_to_head_feature.py             # new: opponent-specific stats
+│   ├── betting_odds_feature.py             # new: odds as features
 │   ├── betting_odds.py
 │   ├── group_stage_feature.py
 │   ├── knockout_history_feature.py
 │   ├── penalty_feature.py
-│   ├── prepare_data_with_international.py  # new: with imputation
+│   ├── prepare_data_with_international.py  # updated: 21 features, imputation
 │   └── prepare_data.py
 ├── training/
 │   ├── train_and_save_model.py             # new: saves model to disk
 │   ├── train_score_predictor.py            # new: Poisson for scores
+│   ├── retrain_with_live_data.py           # new: online learning from tournament
 │   ├── train_random_forest.py
+│   ├── cross_validate_models.py            # updated: compares v1 vs v2 vs v3
 │   └── compare_models.py
 ├── models/
 │   ├── random_forest_model.pkl             # pre-trained, loads instantly
@@ -95,8 +107,9 @@ world-cup-predictor/
 │   ├── international_results.csv           # new: 49k matches 1872-2026
 │   ├── elo_ratings_all_teams_2022.csv      # new: 333 teams
 │   ├── elo_ratings_all_teams_2026.csv      # new: for predictions
+│   ├── prediction_log.csv                  # new: live tournament tracking
 │   ├── matches_1930_2022.csv
-│   ├── knockout_matches_prepared.csv       # 552 samples now
+│   ├── knockout_matches_prepared.csv       # 552 samples, 21 features
 │   ├── elo_ratings_wc2026.csv
 │   └── group_stage_2026.csv
 └── README.md
@@ -109,24 +122,29 @@ world-cup-predictor/
 - Elo ratings only for 2026 qualifiers (Russia, Denmark, etc. missing)
 - No score predictions
 - Rolling features only from World Cup matches (too sparse)
+- No head-to-head or betting odds features
 
 **v2 fixes:**
 - **552 training samples** (11.5x more) — Added intelligent imputation for missing xG (uses actual goals as proxy) and other features
 - **Complete Elo ratings** — Calculated for all 333 teams using official K-factors from international match history
 - **Score prediction** — Poisson regression models predict actual scorelines (~0.9 goal error)
-- **Rolling goals from all internationals** — Uses 49,484 matches to calculate form (last 10 games) instead of just World Cups. These are now the most important features.
-- **Better accuracy** — 64.8% vs 58.9% on cross-validation
+- **Rolling goals from all internationals** — Uses 49,484 matches to calculate form (last 10 games) instead of just World Cups. These are the most important features at 12.4-12.6%.
+- **Head-to-head features** — Win rate and goal difference between teams in 1-2 years before the World Cup (captures opponent-specific form)
+- **Betting odds as features** — Converts moneyline to implied probability ("wisdom of crowds")
+- **Prediction tracking** — Live tournament logging with accuracy and error metrics
+- **Better accuracy** — 65% vs 58.9% on cross-validation, **80% on actual R32 matches**
 
 ## Feature importance (what the model relies on)
 
-1. **Away team goals against** (12.6%) — How many goals they concede recently
-2. **Home team goals against** (12.4%) — Defensive form is critical
+1. **Away team goals against** (12.5%) — How many goals they concede recently
+2. **Home team goals against** (12.5%) — Defensive form is critical
 3. **Elo difference** (12.1%) — Still the foundation
-4. **Rolling xG** (11.3% home, 10.9% away) — Expected goals from recent matches
-5. **Rolling goals for** (8.2% home, 8.2% away) — Offensive form
-6-10. Penalty rates, group stage stats, host advantage (~5% each)
+4. **Home rolling xG** (7.5%) — Expected goals from recent matches
+5. **Away rolling xG** (7.5%) — Attacking threat
+6. **Rolling goals for** (8.2% home, 7.6% away) — Offensive form
+7-14. Penalty rates, group stage stats, host advantage, head-to-head stats (~5% each)
 
-Defense matters more than offense in knockouts. Teams that don't concede advance.
+Defense matters most in knockouts. Teams that don't concede advance. Head-to-head records capture opponent-specific dynamics.
 
 ## Things I know are limited
 
@@ -134,7 +152,7 @@ Defense matters more than offense in knockouts. Teams that don't concede advance
 - No player-level data (injuries, suspensions, form)
 - Score predictions round to integers (can't predict 2.3 goals)
 - Cross-validation variance on 552 samples
-- No live form tracking during tournament
+- Head-to-head data sparse for early tournaments (only 1-2 matches for some historic pairings)
 
 ## Data sources
 
@@ -165,8 +183,8 @@ python test_multiple_predictions.py
 - Ensemble with gradient boosting (XGBoost/LightGBM likely +2-5% accuracy)
 - Player-level data (top scorers, injuries via Transfermarkt)
 - Tournament progression features (days rest, extra time in previous round)
-- Head-to-head historical records between specific teams
 - Confidence intervals on predictions
 - Web interface (Flask/Streamlit)
+- Live model retraining as tournament progresses (online learning from prediction log)
 
-Built during the 2026 World Cup as a learning project. I used Amazon Kiro to help with feature engineering, Elo calculation, data imputation, and model training. The rolling goals insight (most important features) came from exploring what actual matters in knockout football. MIT License.
+Built during the 2026 World Cup as a learning project. The model tracks live performance and improves through the tournament. MIT License.
