@@ -18,7 +18,7 @@ print("="*70)
 df = pd.read_csv('../data/knockout_matches_prepared.csv')
 print(f"\nLoaded {len(df)} knockout matches from historical data")
 
-# Define features
+# Define features (21 total: original 14 + 7 new)
 feature_cols = [
     'elo_diff', 
     'home_rolling_xg_10', 
@@ -33,7 +33,14 @@ feature_cols = [
     'home_rolling_gf_10',
     'home_rolling_ga_10',
     'away_rolling_gf_10',
-    'away_rolling_ga_10'
+    'away_rolling_ga_10',
+    'home_h2h_win_rate',
+    'away_h2h_win_rate',
+    'home_h2h_goal_diff',
+    'away_h2h_goal_diff',
+    'h2h_meeting_count',
+    'home_odds_prob',
+    'away_odds_prob'
 ]
 
 target_col = 'home_advanced'

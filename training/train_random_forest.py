@@ -20,7 +20,14 @@ feature_cols = ['elo_diff',
 'home_rolling_gf_10',
 'home_rolling_ga_10',
 'away_rolling_gf_10',
-'away_rolling_ga_10']
+'away_rolling_ga_10',
+'home_h2h_win_rate',
+'away_h2h_win_rate',
+'home_h2h_goal_diff',
+'away_h2h_goal_diff',
+'h2h_meeting_count',
+'home_odds_prob',
+'away_odds_prob']
 
 target_col = 'home_advanced'
 
@@ -34,7 +41,7 @@ y_train = train['home_advanced']
 X_test = test[feature_cols]
 y_test = test['home_advanced']
 
-model = RandomForestClassifier(n_estimators=10000, random_state=50)
+model = RandomForestClassifier(n_estimators=10000, random_state=42)
 model.fit(X_train, y_train)
 
 y_pred = model.predict(X_test)

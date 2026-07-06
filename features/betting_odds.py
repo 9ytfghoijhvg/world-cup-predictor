@@ -10,15 +10,26 @@ Contains:
 
 # 2026 Round of 32 Moneyline Odds (from Fox Sports, FanDuel as of July 1, 2026)
 knockout_odds_2026 = {
-    ('England', 'DR Congo'): (-380, 440, 1300),
-    ('Belgium', 'Senegal'): (115, 210, 260),
-    ('United States', 'Bosnia and Herzegovina'): (-280, 400, 800),
     ('Spain', 'Austria'): (-340, 420, 1000),
     ('Croatia', 'Portugal'): (400, 260, -130),
     ('Switzerland', 'Algeria'): (105, 220, 300),
     ('Australia', 'Egypt'): (240, 185, 150),
     ('Argentina', 'Cape Verde'): (-700, 650, 1900),
     ('Ghana', 'Colombia'): (650, 290, -200),
+}
+
+# Already played 2026 R32 matches (July 1 and earlier)
+knockout_odds_2026_played = {
+    ('Canada', 'South Africa'): (-140, 290, 1000),
+    ('Brazil', 'Japan'): (-220, 320, 850),
+    ('Germany', 'Paraguay'): (550, 320, -600),
+    ('Netherlands', 'Morocco'): (440, 300, -330),
+    ('Ivory Coast', 'Norway'): (370, 340, -410),
+    ('France', 'Sweden'): (-800, 350, 700),
+    ('Mexico', 'Ecuador'): (-170, 300, 140),
+    ('England', 'DR Congo'): (-380, 440, 1300),  # July 1: England won 2-1
+    ('United States', 'Bosnia and Herzegovina'): (-280, 400, 800),  # July 1: USA won 2-0
+    ('Belgium', 'Senegal'): (115, 210, 260),  # July 1: Belgium won 3-2 (AET)
 }
 
 # 2022 Qatar Knockout Odds (from OddsPortal, FanDuel, DraftKings archives)
@@ -74,7 +85,7 @@ knockout_odds_2018 = {
     ('France', 'Croatia'): (-180, 360, 850),  # France favorite
 }
 
-# Already played 2026 matches (for reference)
+# Already played 2026 R32 matches (July 1 and earlier)
 knockout_odds_2026_played = {
     ('Canada', 'South Africa'): (-140, 290, 1000),
     ('Brazil', 'Japan'): (-220, 320, 850),
@@ -83,20 +94,39 @@ knockout_odds_2026_played = {
     ('Ivory Coast', 'Norway'): (370, 340, -410),
     ('France', 'Sweden'): (-800, 350, 700),
     ('Mexico', 'Ecuador'): (-170, 300, 140),
+    ('England', 'DR Congo'): (-380, 440, 1300),  # July 1: England won 2-1
+    ('United States', 'Bosnia and Herzegovina'): (-280, 400, 800),  # July 1: USA won 2-0
+    ('Belgium', 'Senegal'): (115, 210, 260),  # July 1: Belgium won 3-2 (AET)
 }
 
-# Remaining unplayed 2026 R32 matches
-remaining_r32_matches = [
-    ('England', 'DR Congo'),
-    ('Belgium', 'Senegal'),
-    ('United States', 'Bosnia and Herzegovina'),
-    ('Spain', 'Austria'),
-    ('Croatia', 'Portugal'),
-    ('Switzerland', 'Algeria'),
-    ('Australia', 'Egypt'),
-    ('Argentina', 'Cape Verde'),
-    ('Ghana', 'Colombia'),
+# Remaining unplayed 2026 matches
+# All 8 Round of 16 matches (July 4-7, 2026)
+
+remaining_r16_matches = [
+    ('Paraguay', 'France'),
+    ('Canada', 'Morocco'),
+    ('Brazil', 'Norway'),
+    ('Mexico', 'England'),
+    ('United States', 'Belgium'),
+    ('Spain', 'Portugal'),
+    ('Argentina', 'Egypt'),
+    ('Colombia', 'Switzerland'),
 ]
+
+# For backward compatibility (used by interactive predictor)
+remaining_r32_matches = remaining_r16_matches
+
+# 2026 Round of 16 Moneyline Odds
+knockout_odds_2026_r16 = {
+    ('Paraguay', 'France'): (550, 320, -150),
+    ('Canada', 'Morocco'): (-150, 320, 600),
+    ('Brazil', 'Norway'): (-120, 320, 700),
+    ('Mexico', 'England'): (200, 340, -180),
+    ('United States', 'Belgium'): (110, 310, -150),
+    ('Spain', 'Portugal'): (-140, 330, 1000),
+    ('Argentina', 'Egypt'): (-280, 380, 900),
+    ('Colombia', 'Switzerland'): (115, 320, -150),
+}
 
 
 def american_to_probability(american_odds):
@@ -120,7 +150,14 @@ def get_match_betting_odds(home_team, away_team, year=2026):
     
     # Select year-specific odds
     if year == 2026:
-        if key in knockout_odds_2026:
+    # Check R16 first
+        if key in knockout_odds_2026_r16:
+            odds_data = knockout_odds_2026_r16[key]
+            is_played = False
+        elif key in knockout_odds_2026_qf:
+            odds_data = knockout_odds_2026_qf[key]
+            is_played = False
+        elif key in knockout_odds_2026:
             odds_data = knockout_odds_2026[key]
             is_played = False
         elif key in knockout_odds_2026_played:

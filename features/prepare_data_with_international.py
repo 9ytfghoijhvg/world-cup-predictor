@@ -4,6 +4,9 @@ from penalty_feature import get_penalty_stats
 from group_stage_feature import add_group_stage_features
 from knockout_history_feature import get_knockout_history
 from rolling_goals_feature import add_rolling_goals_features
+from rolling_xg_feature import add_rolling_xg_features
+from head_to_head_feature import get_head_to_head_stats
+from betting_odds_feature import add_betting_odds_features
 
 # Load World Cup matches (for knockout match preparation)
 df_wc = pd.read_csv("../data/matches_1930_2022.csv")
@@ -73,44 +76,9 @@ ko_expanded = ko_expanded.drop(columns=['team'])
 # Calculate Elo difference
 ko_expanded['elo_diff'] = ko_expanded['home_elo'] - ko_expanded['away_elo']
 
-# === ROLLING xG FROM WORLD CUP MATCHES ===
-# Impute missing xG with actual goals (highly correlated)
-print("\n=== Imputing missing xG data ===")
-df_wc_imputed = df_wc.copy()
-df_wc_imputed['home_xg'] = df_wc_imputed['home_xg'].fillna(df_wc_imputed['home_score'])
-df_wc_imputed['away_xg'] = df_wc_imputed['away_xg'].fillna(df_wc_imputed['away_score'])
-
-xg_imputed_count = df_wc['home_xg'].isna().sum()
-print(f"Imputed {xg_imputed_count} missing xG values using actual goals scored")
-
-home_view = df_wc_imputed[['Date', 'home_team', 'home_xg']].copy()
-home_view.columns = ['Date', 'team', 'xg']
-
-away_view = df_wc_imputed[['Date', 'away_team', 'away_xg']].copy()
-away_view.columns = ['Date', 'team', 'xg']
-
-team_matches = pd.concat([home_view, away_view], ignore_index=True)
-team_matches = team_matches.sort_values(['team', 'Date']).reset_index(drop=True)
-
-team_matches['rolling_xg_10'] = team_matches.groupby('team')['xg'].transform(
-    lambda x: x.rolling(window=10, min_periods=1).mean()
-)
-rolling_averages = team_matches[['Date', 'team', 'rolling_xg_10']].copy()
-rolling_averages['Date'] = pd.to_datetime(rolling_averages['Date'])
-
-# Merge xG for home
-ko_expanded = ko_expanded.merge(rolling_averages[['Date', 'team', 'rolling_xg_10']], 
-                                 left_on=['Date', 'home_team'], 
-                                 right_on=['Date', 'team'], 
-                                 how='left')
-ko_expanded.rename(columns={'rolling_xg_10': 'home_rolling_xg_10'}, inplace=True)
-
-# Merge xG for away
-ko_expanded = ko_expanded.merge(rolling_averages[['Date', 'team', 'rolling_xg_10']], 
-                                 left_on=['Date', 'away_team'], 
-                                 right_on=['Date', 'team'], 
-                                 how='left')
-ko_expanded.rename(columns={'rolling_xg_10': 'away_rolling_xg_10'}, inplace=True)
+# === ROLLING xG FROM ALL INTERNATIONAL MATCHES (FIXED) ===
+print("\n=== Adding rolling xG features from all international matches ===")
+ko_expanded = add_rolling_xg_features(ko_expanded, df_all, window=10)
 
 # Host advantage feature
 ko_expanded['host_advantage'] = np.where(
@@ -157,6 +125,14 @@ ko_expanded = add_group_stage_features(ko_expanded, group_stage)
 print("\n=== Adding rolling goals features from all international matches ===")
 ko_expanded = add_rolling_goals_features(ko_expanded, df_all, window=10)
 
+# === ADD HEAD-TO-HEAD FEATURES ===
+print("\n=== Adding head-to-head features (1-2 year lookback) ===")
+ko_expanded = get_head_to_head_stats(ko_expanded, df_all)
+
+# === ADD BETTING ODDS FEATURES ===
+print("\n=== Adding betting odds probability features ===")
+ko_expanded = add_betting_odds_features(ko_expanded)
+
 # === IMPUTE REMAINING MISSING VALUES ===
 print("\n=== Imputing remaining missing values ===")
 
@@ -164,7 +140,9 @@ print("\n=== Imputing remaining missing values ===")
 feature_cols = ['elo_diff', 'home_rolling_xg_10', 'away_rolling_xg_10', 'host_advantage', 
                 'home_penalty_win_rate', 'away_penalty_win_rate', 'home_group_points', 
                 'home_group_gd', 'away_group_points', 'away_group_gd',
-                'home_rolling_gf_10', 'home_rolling_ga_10', 'away_rolling_gf_10', 'away_rolling_ga_10']
+                'home_rolling_gf_10', 'home_rolling_ga_10', 'away_rolling_gf_10', 'away_rolling_ga_10',
+                'home_h2h_win_rate', 'away_h2h_win_rate', 'home_h2h_goal_diff', 'away_h2h_goal_diff', 'h2h_meeting_count',
+                'home_odds_prob', 'away_odds_prob']
 target_col = 'home_advanced'
 
 # Impute missing Elo with global average
@@ -199,6 +177,33 @@ for col in ['home_rolling_gf_10', 'home_rolling_ga_10', 'away_rolling_gf_10', 'a
         ko_expanded[col] = ko_expanded[col].fillna(1.0)
         print(f"Imputed {missing} missing {col} (set to 1.0)")
 
+# Impute missing rolling xG (should be minimal since we impute with goals)
+for col in ['home_rolling_xg_10', 'away_rolling_xg_10']:
+    missing = ko_expanded[col].isna().sum()
+    if missing > 0:
+        ko_expanded[col] = ko_expanded[col].fillna(1.0)
+        print(f"Imputed {missing} missing {col} (set to 1.0)")
+
+# Impute missing head-to-head features (already defaulted to neutral in feature module, but check)
+for col in ['home_h2h_win_rate', 'away_h2h_win_rate']:
+    missing = ko_expanded[col].isna().sum()
+    if missing > 0:
+        ko_expanded[col] = ko_expanded[col].fillna(0.5)
+        print(f"Imputed {missing} missing {col} (set to 0.5 = neutral)")
+
+for col in ['home_h2h_goal_diff', 'away_h2h_goal_diff', 'h2h_meeting_count']:
+    missing = ko_expanded[col].isna().sum()
+    if missing > 0:
+        ko_expanded[col] = ko_expanded[col].fillna(0.0)
+        print(f"Imputed {missing} missing {col} (set to 0)")
+
+# Impute missing betting odds (already defaulted to 0.5, but check)
+for col in ['home_odds_prob', 'away_odds_prob']:
+    missing = ko_expanded[col].isna().sum()
+    if missing > 0:
+        ko_expanded[col] = ko_expanded[col].fillna(0.5)
+        print(f"Imputed {missing} missing {col} (set to 0.5 = neutral)")
+
 # Final check
 total_rows = len(ko_expanded)
 clean_rows = ko_expanded[feature_cols + [target_col]].dropna().shape[0]
@@ -209,7 +214,9 @@ ko_expanded.to_csv('../data/knockout_matches_prepared.csv', index=False)
 print(f"\n✅ Saved prepared data: {len(ko_expanded)} rows with features ready for modeling")
 
 # Show sample of new features
-print("\n=== Sample of rolling goals features ===")
-sample = ko_expanded[['Date', 'home_team', 'away_team', 'home_rolling_gf_10', 
-                      'home_rolling_ga_10', 'away_rolling_gf_10', 'away_rolling_ga_10']].tail(10)
+print("\n=== Sample of NEW features ===")
+sample = ko_expanded[['Date', 'home_team', 'away_team', 
+                      'home_rolling_xg_10', 'away_rolling_xg_10',
+                      'home_h2h_win_rate', 'h2h_meeting_count',
+                      'home_odds_prob', 'away_odds_prob']].tail(10)
 print(sample)
