@@ -54,7 +54,7 @@ KNOCKOUT_GAMES = [
     ("Semi-finals", "2026-07-15", "Argentina", "England", 2, 1, None, None, "United States", True),
     # ---------------- Third place (July 18) & Final (July 19) — unverified ----------------
     ("Third place", "2026-07-18", "France", "England", 1, 2, None, None, "United States", False),
-    ("Final", "2026-07-19", "Spain", "Argentina", 1, 0, None, None, "United States", True),
+    ("Final", "2026-07-19", "Spain", "Argentina", 1, 0, None, None, "United States", False),
 ]
 
 

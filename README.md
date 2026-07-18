@@ -43,33 +43,31 @@ DR Congo advance: 6.4%
 
 **Interactive CLI** (`src/interactive_predictor_numbered.py`) — Lists the remaining Round of 16 matches with betting odds, lets you pick which matchup to analyze.
 
-**Prediction tracking** (`src/log_r32_predictions.py`, `src/log_r16_predictions.py`) — Logs all model predictions vs actual results. Tracks winner accuracy and score prediction error (MAE). Data stored in `data/prediction_log.csv` for ongoing tournament analysis.
+**Prediction tracking** (`src/backtest_knockout.py`, `src/knockout_2026_results.py`) — Backtests all 32 knockout games with point-in-time features (each game uses only pre-kickoff data), logging predicted vs actual winner and score. Tracks winner accuracy and score MAE per round. Data stored in `data/prediction_log.csv`.
 
-## Tournament performance (live tracking)
+## Tournament performance (point-in-time backtest)
 
-**Round of 32 (10 matches completed):**
-- Winner accuracy: **80%** (8/10 correct)
-- Score MAE: 0.55 goals
-- ✅ Correct: Canada, Brazil, France, Norway, Mexico, England, USA, Belgium
-- ❌ Incorrect: Germany (lost to Paraguay), Netherlands (lost to Morocco)
+The full knockout stage is backtested by [src/backtest_knockout.py](src/backtest_knockout.py):
+every game is predicted using only data available before kickoff (rolling form
+evolves round by round), then compared to the official result. All 32 games are
+logged to `data/prediction_log.csv` with a `round` column.
 
-**Round of 16 (3 matches completed so far):**
-- Winner accuracy: **66.7%** (2/3 correct)
-- Score MAE: 0.73 goals
-- ✅ Correct: France, Morocco
-- ❌ Incorrect: Brazil (lost to Norway)
+| Round | Winner accuracy | Score MAE |
+|---|---|---|
+| Round of 32 | 11/16 (69%) | 0.81 |
+| Round of 16 | 6/8 (75%) | 1.12 |
+| Quarter-finals | 3/4 (75%) | 0.50 |
+| Semi-finals | 2/2 (100%) | 0.75 |
+| Third place | 0/1 | 1.00 |
+| Final | 0/1 | 1.00 |
+| **Overall** | **22/32 (68.8%)** | **0.86** |
 
-**Overall tournament: 77% accuracy (10/13)**
+Misses: Germany→Paraguay, Netherlands→Morocco, Ecuador→Mexico, Croatia→Portugal,
+Australia→Egypt (R32); Brazil→Norway, Colombia→Switzerland (R16); Belgium→Spain
+(QF); plus the third-place and final upsets. The third-place match and final were
+unplayed as of the results snapshot (flagged `verified_result=False` in the log).
 
-## Actual R16 predictions (as they come in)
-
-```
-Paraguay vs France: France 95.8% (0-3) ✅ Correct
-Canada vs Morocco: Morocco 65.0% (1-1) ✅ Correct
-Brazil vs Norway: Brazil 77.6% (3-1) ❌ Wrong (Norway won 1-2)
-```
-
-Run `python src/log_r16_predictions.py` to see live predictions as R16 matches complete.
+Regenerate anytime with `python src/backtest_knockout.py`.
 
 ## Project structure
 
