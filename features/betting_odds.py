@@ -102,30 +102,19 @@ knockout_odds_2026_played = {
 # Remaining unplayed 2026 matches
 # All 8 Round of 16 matches (July 4-7, 2026)
 
-remaining_r16_matches = [
-    ('Paraguay', 'France'),
-    ('Canada', 'Morocco'),
-    ('Brazil', 'Norway'),
-    ('Mexico', 'England'),
-    ('United States', 'Belgium'),
-    ('Spain', 'Portugal'),
-    ('Argentina', 'Egypt'),
-    ('Colombia', 'Switzerland'),
+# Remaining unplayed 2026 matches - NOW SEMIFINALS (All QF completed July 11)
+remaining_sf_matches = [
+    ('France', 'Spain'),
+    ('England', 'Argentina'),
 ]
 
 # For backward compatibility (used by interactive predictor)
-remaining_r32_matches = remaining_r16_matches
+remaining_r32_matches = remaining_sf_matches
 
-# 2026 Round of 16 Moneyline Odds
-knockout_odds_2026_r16 = {
-    ('Paraguay', 'France'): (550, 320, -150),
-    ('Canada', 'Morocco'): (-150, 320, 600),
-    ('Brazil', 'Norway'): (-120, 320, 700),
-    ('Mexico', 'England'): (200, 340, -180),
-    ('United States', 'Belgium'): (110, 310, -150),
-    ('Spain', 'Portugal'): (-140, 330, 1000),
-    ('Argentina', 'Egypt'): (-280, 380, 900),
-    ('Colombia', 'Switzerland'): (115, 320, -150),
+# 2026 Semifinal Moneyline Odds (July 14-15, 2026)
+knockout_odds_2026_sf = {
+    ('France', 'Spain'): (-110, 310, 700),
+    ('England', 'Argentina'): (180, 330, -120),
 }
 
 
@@ -150,13 +139,13 @@ def get_match_betting_odds(home_team, away_team, year=2026):
     
     # Select year-specific odds
     if year == 2026:
-    # Check R16 first
-        if key in knockout_odds_2026_r16:
-            odds_data = knockout_odds_2026_r16[key]
+        # Check SF first
+        if key in knockout_odds_2026_sf:
+            odds_data = knockout_odds_2026_sf[key]
             is_played = False
         elif key in knockout_odds_2026_qf:
             odds_data = knockout_odds_2026_qf[key]
-            is_played = False
+            is_played = True
         elif key in knockout_odds_2026:
             odds_data = knockout_odds_2026[key]
             is_played = False

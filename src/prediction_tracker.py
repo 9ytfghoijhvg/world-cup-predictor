@@ -7,9 +7,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 PREDICTIONS_CSV = 'data/prediction_log.csv'
 
-def log_prediction(home_team, away_team, predicted_winner, home_win_prob, predicted_home_score, predicted_away_score, actual_winner=None, actual_home_score=None, actual_away_score=None):
+def log_prediction(home_team, away_team, predicted_winner, home_win_prob, predicted_home_score, predicted_away_score, actual_winner=None, actual_home_score=None, actual_away_score=None, match_date=None):
     """
     Log a prediction for a match.
+    
+    Args:
+        match_date: Optional match date in format 'YYYY-MM-DD'. Defaults to today's date.
     """
     
     # Create or load existing log
@@ -45,8 +48,11 @@ def log_prediction(home_team, away_team, predicted_winner, home_win_prob, predic
             df.at[idx, 'score_away_error'] = abs(df.at[idx, 'predicted_away_score'] - actual_away_score)
     else:
         # Add new prediction
+        if match_date is None:
+            match_date = datetime.now().strftime('%Y-%m-%d')
+        
         new_row = pd.DataFrame([{
-            'match_date': datetime.now().strftime('%Y-%m-%d'),
+            'match_date': match_date,
             'home_team': home_team,
             'away_team': away_team,
             'predicted_winner': predicted_winner,

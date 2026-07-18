@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Log all Round of 16 predictions and actual results for tracking model performance.
+Log all Quarterfinal predictions and actual results for tracking model performance.
 """
 
 import sys
@@ -9,87 +9,54 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from prediction_tracker import log_prediction, display_accuracy, show_predictions_table
 from interactive_predictor_numbered import predict_match
 
-# Round of 16 matches and their results (July 4-7, 2026)
-# ALL 8 MATCHES COMPLETED
-r16_matches = [
-    # July 4 - COMPLETED
+# Quarterfinal matches and their results (July 9-11, 2026)
+# ALL 4 MATCHES COMPLETED
+qf_matches = [
+    # July 9
     {
-        'home': 'Paraguay',
-        'away': 'France',
-        'home_score': 0,
-        'away_score': 1,
-        'winner': 'France',
-        'date': '2026-07-04'
-    },
-    {
-        'home': 'Canada',
+        'home': 'France',
         'away': 'Morocco',
-        'home_score': 0,
-        'away_score': 3,
-        'winner': 'Morocco',
-        'date': '2026-07-04'
-    },
-    # July 5 - COMPLETED
-    {
-        'home': 'Brazil',
-        'away': 'Norway',
-        'home_score': 1,
-        'away_score': 2,
-        'winner': 'Norway',
-        'date': '2026-07-05'
-    },
-    {
-        'home': 'Mexico',
-        'away': 'England',
         'home_score': 2,
-        'away_score': 3,
-        'winner': 'England',
-        'date': '2026-07-05'
+        'away_score': 0,
+        'winner': 'France',
+        'date': '2026-07-09'
     },
-    # July 6 - COMPLETED
-    {
-        'home': 'United States',
-        'away': 'Belgium',
-        'home_score': 1,
-        'away_score': 4,
-        'winner': 'Belgium',
-        'date': '2026-07-06'
-    },
+    # July 10
     {
         'home': 'Spain',
-        'away': 'Portugal',
-        'home_score': 1,
-        'away_score': 0,
+        'away': 'Belgium',
+        'home_score': 2,
+        'away_score': 1,
         'winner': 'Spain',
-        'date': '2026-07-06'
+        'date': '2026-07-10'
     },
-    # July 7 - COMPLETED
+    # July 11
     {
-        'home': 'Argentina',
-        'away': 'Egypt',
-        'home_score': 3,
+        'home': 'Norway',
+        'away': 'England',
+        'home_score': 1,
         'away_score': 2,
-        'winner': 'Argentina',
-        'date': '2026-07-07',
+        'winner': 'England',
+        'date': '2026-07-11',
         'notes': 'Extra time'
     },
     {
-        'home': 'Colombia',
+        'home': 'Argentina',
         'away': 'Switzerland',
-        'home_score': 0,
-        'away_score': 0,
-        'winner': 'Switzerland',
-        'date': '2026-07-07',
-        'notes': 'Penalties 4-3'
+        'home_score': 3,
+        'away_score': 1,
+        'winner': 'Argentina',
+        'date': '2026-07-11',
+        'notes': 'Extra time'
     },
 ]
 
 print("\n" + "="*100)
-print("LOGGING ROUND OF 16 PREDICTIONS AND RESULTS")
+print("LOGGING QUARTERFINAL PREDICTIONS AND RESULTS")
 print("="*100)
 
 # Log each match
-for i, match in enumerate(r16_matches, 1):
+for i, match in enumerate(qf_matches, 1):
     home = match['home']
     away = match['away']
     actual_home_score = match['home_score']
@@ -138,4 +105,4 @@ print("\n")
 show_predictions_table()
 display_accuracy()
 
-print("✅ R16 Predictions logged to data/prediction_log.csv")
+print("✅ QF Predictions logged to data/prediction_log.csv")
