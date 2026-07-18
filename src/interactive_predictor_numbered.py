@@ -522,8 +522,14 @@ def predict_match(home_team, away_team, host_team=None, use_updated_rolling=True
             'note': '⚠️ Using stagnant rolling features (fallback mode)'
         }
 
-def display_result(result, odds_data=None):
-    """Display prediction result nicely"""
+def display_result(result, odds_data=None, terminal=False):
+    """Display prediction result nicely.
+
+    terminal=True for the final and third-place match, where there is no next
+    round to advance to — the predicted team simply wins the match.
+    """
+    verb = 'win' if terminal else 'advance'       # "X win: 63%" / pens line
+    headline = 'wins' if terminal else 'advance'   # "Prediction: X wins"
     print("\n" + "=" * 70)
     print(f"{result['home_team']} vs {result['away_team']}")
     print("=" * 70)
@@ -543,12 +549,16 @@ def display_result(result, odds_data=None):
         score = result['predicted_score']
         print(f"📊 Predicted Score: {result['home_team']} {score['home_goals_rounded']}-{score['away_goals_rounded']} {result['away_team']}")
         print(f"   (Expected: {score['home_goals']:.1f} - {score['away_goals']:.1f})")
+        # A rounded draw in a knockout is decided on penalties — the classifier
+        # (not the scoreline) breaks the tie, so note who goes through.
+        if score['home_goals_rounded'] == score['away_goals_rounded']:
+            print(f"   ⚽ Level after extra time — {result['prediction']} {verb} on penalties")
         print()
-    
-    print(f"{result['home_team']} advance: {result['home_win_prob']:.1%}")
-    print(f"{result['away_team']} advance: {result['away_win_prob']:.1%}")
+
+    print(f"{result['home_team']} {verb}: {result['home_win_prob']:.1%}")
+    print(f"{result['away_team']} {verb}: {result['away_win_prob']:.1%}")
     print()
-    print(f"🏆 Prediction: {result['prediction']} advance")
+    print(f"🏆 Prediction: {result['prediction']} {headline}")
     print("=" * 70 + "\n")
 
 def display_match_list():
@@ -556,7 +566,7 @@ def display_match_list():
     print("\n" + "=" * 70)
     print("2026 FIFA World Cup - Finals")
     print("=" * 70)
-    print("\n1. France vs England (3rd Place Match - July 16)")
+    print("\n1. France vs England (3rd Place Match - July 18)")
     print("2. Spain vs Argentina (Final - July 19)")
     print("\n" + "=" * 70 + "\n")
 
@@ -600,7 +610,9 @@ def main():
         # Make prediction
         try:
             result = predict_match(home_team, away_team)
-            display_result(result, odds_data=None)
+            # Both menu games (final, third place) are terminal — winner wins,
+            # there is no next round to advance to.
+            display_result(result, odds_data=None, terminal=True)
         except Exception as e:
             print(f"\n❌ Error making prediction: {e}")
             print("Please try again.\n")
